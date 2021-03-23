@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import { useSession, signIn, signOut } from 'next-auth/client'
+import { useAuth0 }  from '@auth0/auth0-react'
 
 export const getStaticProps = async () => {
   const res = await fetch('https://jsonplaceholder.typicode.com/posts');
@@ -12,13 +12,11 @@ export const getStaticProps = async () => {
 }
 
 const Home = ({ posts }) => {
-  const [ session, loading ] = useSession()
-    if(session) {
-      return <>
-        Signed in as {session.user.email} <br/>
-        <button onClick={() => signOut()}>Sign out</button>
-      </>
-    }
+  const { loginWithRedirect, isAuthenticated, user, logout, isLoading } = useAuth0();
+  if (isLoading) {
+    return <div>Loading ...</div>;
+  }
+
   return (
     <>
       <Head>
@@ -33,14 +31,17 @@ const Home = ({ posts }) => {
             Get started by editing{' '}
             <code className={styles.code}>pages/index.js</code>
           </p>
-          {session ? 
+          {isAuthenticated ? 
             <>
-              Signed in as {session.user.email} <br/>
-              <button className={styles.signIn} onClick={() => signOut()}>Sign Out</button>
+              <p className={styles.description}>
+                Hello, {user.name} 👋
+              </p>
+              <div>
+                <button className={styles.signIn} onClick={() => logout({ returnTo: window.location.origin })}>Log Out</button>
+              </div> 
             </> :
             <div>
-              <button className={styles.signIn} onClick={() => signIn()}>Sign In</button>
-              <button className={styles.signUp}>Sign Up</button>
+              <button className={styles.signUp} onClick={() => loginWithRedirect()}>Sign In</button>
             </div>
           }
 
